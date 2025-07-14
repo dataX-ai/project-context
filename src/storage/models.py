@@ -12,22 +12,33 @@ class RelationshipType(Enum):
     """Types of relationships between contexts"""
     DEPENDS_ON = "depends_on"
     AFFECTS = "affects"
+    USES = "uses"
+    DECIDES = "decides"
 
+# Neo4j Schema Definitions
+NEO4J_NODE_TYPES = [
+    {"label": "Component", "properties": [{"name": "name", "type": "STRING"}]},
+    {"label": "Technology", "properties": [{"name": "name", "type": "STRING"}]},
+    {"label": "Decision", "properties": [{"name": "summary", "type": "STRING"}]}
+]
 
-class Node(BaseModel):
-    """Knowledge graph node representing a context"""
-    context_id: str = Field(..., description="Unique identifier (e.g., 'auth_jwt_token')")
-    description: str = Field(..., description="One-two line description of the context")
-    category: Optional[str] = Field(None, description="Context category")
-    tags: List[str] = Field(default_factory=list, description="Context tags")
-    updated_at: datetime = Field(default_factory=datetime.now)
-    attributes: Dict[str, Any] = Field(default_factory=dict, description="Additional node attributes")
+NEO4J_RELATIONSHIP_TYPES = [
+    {"label": "USES", "properties": [{"name": "strength", "type": "FLOAT"}]},
+    {"label": "DECIDES", "properties": [{"name": "strength", "type": "FLOAT"}]},
+    {"label": "DEPENDS_ON", "properties": [{"name": "strength", "type": "FLOAT"}]}
+]
 
+NEO4J_PATTERNS = [
+    ("Component", "USES", "Technology"),
+    ("Component", "DECIDES", "Decision"),
+    ("Component", "DEPENDS_ON", "Component")
+]
 
-class Relationship(BaseModel):
-    """Knowledge graph relationship/edge"""
-    source_id: str = Field(..., description="Source context ID")
-    target_id: str = Field(..., description="Target context ID")
-    rel_type: RelationshipType = Field(..., description="Relationship type")
-    updated_at: datetime = Field(default_factory=datetime.now)
-    attributes: Dict[str, Any] = Field(default_factory=dict, description="Additional relationship attributes")
+NEO4J_SCHEMA = {
+    "node_types": NEO4J_NODE_TYPES,
+    "relationship_types": NEO4J_RELATIONSHIP_TYPES,
+    "patterns": NEO4J_PATTERNS,
+    "additional_node_types": False,
+    "additional_relationship_types": False,
+    "additional_properties": False
+}
